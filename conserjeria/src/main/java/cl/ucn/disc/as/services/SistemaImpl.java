@@ -2,15 +2,17 @@ package cl.ucn.disc.as.services;
 
 import cl.ucn.disc.as.model.*;
 import io.ebean.Database;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
 import javax.persistence.PersistenceException;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import static io.avaje.classpath.scanner.internal.ScanLog.log;
-
+@Slf4j
 public class SistemaImpl implements Sistema{
     /**
      * The database
@@ -32,6 +34,7 @@ public class SistemaImpl implements Sistema{
         try {
             this.database.save(edificio);
         } catch (PersistenceException ex) {
+            log.error("Error al agregar un edificio: " + ex.getMessage(), ex);
             throw new SecurityException("Error al agregar un edificio", ex);
         }
         // WARN: need to retrieve the id?
@@ -49,6 +52,7 @@ public class SistemaImpl implements Sistema{
         try {
             this.database.save(persona);
         } catch (PersistenceException ex){
+            log.error("Error al agregar un persona: " + ex.getMessage(), ex);
             throw new SecurityException("Error al agregar un edificio",ex);
         }
         // WARN: need to retrieve the id?
@@ -68,6 +72,7 @@ public class SistemaImpl implements Sistema{
             departamento.setEdificio(edificio);
             this.database.save(departamento);
         } catch (PersistenceException ex) {
+            log.error("Error al agregar un departamento a un edificio: " + ex.getMessage(), ex);
             throw new SecurityException("Error al agregar un departamento a un edificio", ex);
         }
         return departamento;
@@ -90,6 +95,7 @@ public class SistemaImpl implements Sistema{
         try {
             this.database.save(departamento);
         } catch (PersistenceException ex){
+            log.error("Error al agregar un departamento: " + ex.getMessage(), ex);
             throw new SecurityException("Error al agregar un edificio",ex);
         }
         // WARN: need to retrieve the id?
@@ -110,6 +116,7 @@ public class SistemaImpl implements Sistema{
         try {
             this.database.save(contrato);
         } catch (PersistenceException ex) {
+            log.error("Error al realizar un contrato: " + ex.getMessage(), ex);
             throw new SecurityException("Error al realizar el contrato", ex);
         }
         return contrato;
@@ -133,6 +140,7 @@ public class SistemaImpl implements Sistema{
             }
             return realizarContrato(duenio, departamento, fechaPago);
         } catch (Exception ex) {
+            log.error("Error al realizar un contrato: " + ex.getMessage(), ex);
             throw new SecurityException("Error al realizar un contrato", ex);
         }
     }
@@ -166,5 +174,15 @@ public class SistemaImpl implements Sistema{
     @Override
     public List<Pago> getPagos(String rut) {
         return this.database.find(Pago.class).where().eq("persona.rut", rut).findList();
+    }
+
+    @Override
+    public Optional<Persona> getPersona(String rut) {
+        return Optional.empty();
+    }
+
+    @Override
+    public void populate() {
+
     }
 }

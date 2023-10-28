@@ -1,16 +1,19 @@
 package cl.ucn.disc.as;
 
-import cl.ucn.disc.as.dao.PersonaFinder;
 import cl.ucn.disc.as.model.Edificio;
-import cl.ucn.disc.as.model.Pago;
+import cl.ucn.disc.as.ui.ApiRestServer;
+import cl.ucn.disc.as.ui.WebController;
 import cl.ucn.disc.as.model.Persona;
 import cl.ucn.disc.as.services.Sistema;
 import cl.ucn.disc.as.services.SistemaImpl;
+import com.github.javafaker.Faker;
+import com.github.javafaker.service.FakeValuesService;
+import com.github.javafaker.service.RandomService;
 import io.ebean.DB;
 import io.ebean.Database;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.Instant;
+import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -23,10 +26,12 @@ public final class Main {
     /**
      * The Main
      *
-     * @param args
+     * @param args to use
      */
     public static void main(String[] args) {
         log.debug("Starting Main ...");
+        ApiRestServer.start(7070, new WebController());
+        log.debug("Done. :)");
 
         //get the database
         Database db = DB.getDefault();
@@ -57,10 +62,24 @@ public final class Main {
         db.save(persona);
         log.debug("The persona: ${} ", persona);
 
-        //finder de personas
-        PersonaFinder pf = new PersonaFinder();
-        Optional<Persona> oPersona = pf.byRut("20784533-7");
-        oPersona.ifPresent(p -> log.debug("Persona from db: {}", p));
-        log.debug("Listo. ");
+        // the faker
+        Locale locale = new Locale("es-CL");
+        FakeValuesService fvs = new FakeValuesService(locale, new RandomService());
+        Faker faker = new Faker(locale);
+
+        // faker
+        /**
+        for (int i = 0; i < 1000; i++) {
+            persona = Persona.builder()
+                    .rut(fvs.bothify("########-#"))
+                    .nombre(faker.name().firstName())
+                    .apellidos(faker.name().lastName())
+                    .email(fvs.bothify("????##@gmail.com"))
+                    .telefono(fvs.bothify("+569########"))
+                    .build();
+            db.save(persona);
+        }
+         */
+
     }
 }
