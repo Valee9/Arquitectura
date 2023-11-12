@@ -34,10 +34,19 @@ public class WebController implements RoutesConfigurator{
     public void configure(final Javalin app) {
 
         app.get("/", ctx -> {
+            ctx.result("Welcome to Conserjeria API REST");
+        });
+
+        // the personas api
+        app.get("/personas", ctx -> {
+            ctx.json(this.sistema.getPersonas());
+        });
+
+        app.get("/personas/rut/{rut}", ctx -> {
 
             String rut = ctx.pathParam("rut");
             Optional<Persona> oPersona = this.sistema.getPersona(rut);
-            ctx.json(oPersona.orElseThrow(() -> new NotFoundResponse("Can't fins Persona with rut: " + rut)));
+            ctx.json(oPersona.orElseThrow(() -> new NotFoundResponse("Can't find Persona with rut: " + rut)));
         });
     }
 }

@@ -11,6 +11,7 @@ import com.github.javafaker.service.FakeValuesService;
 import com.github.javafaker.service.RandomService;
 import io.ebean.DB;
 import io.ebean.Database;
+import io.javalin.Javalin;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Locale;
@@ -29,8 +30,17 @@ public final class Main {
      * @param args to use
      */
     public static void main(String[] args) {
+
         log.debug("Starting Main ...");
-        ApiRestServer.start(7070, new WebController());
+
+        log.debug("Library path: {}", System.getProperty("java.library.path"));
+
+        // Start the API Rest server
+        Javalin app = ApiRestServer.start(7070, new WebController());
+
+        //log.debug("Stopping ..");
+        //app.stop();
+
         log.debug("Done. :)");
 
         //get the database
@@ -49,28 +59,14 @@ public final class Main {
         edificio = sistema.add(edificio);
         log.debug("Edificio before db: {}",edificio);
 
-        // build the persona
-        Persona persona = Persona.builder()
-                .rut("20784533-7")
-                .nombre("Valentina")
-                .apellidos("Hormazabal Bahamondes")
-                .email("vale@gmail.com")
-                .telefono("+5698913290")
-                .build();
-
-        //save into db
-        db.save(persona);
-        log.debug("The persona: ${} ", persona);
-
         // the faker
         Locale locale = new Locale("es-CL");
         FakeValuesService fvs = new FakeValuesService(locale, new RandomService());
         Faker faker = new Faker(locale);
 
         // faker
-        /**
         for (int i = 0; i < 1000; i++) {
-            persona = Persona.builder()
+            Persona persona = Persona.builder()
                     .rut(fvs.bothify("########-#"))
                     .nombre(faker.name().firstName())
                     .apellidos(faker.name().lastName())
@@ -79,7 +75,6 @@ public final class Main {
                     .build();
             db.save(persona);
         }
-         */
 
     }
 }

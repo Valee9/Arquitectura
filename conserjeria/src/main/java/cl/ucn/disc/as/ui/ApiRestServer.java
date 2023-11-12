@@ -115,11 +115,20 @@ public class ApiRestServer {
 
         // configure the server.
         return Javalin.create(config -> {
+            //json mapper configuration
             config.jsonMapper(jsonMapper);
+
+            // gzip compression
             config.compression.gzipOnly(9);
+            // config.compression.brotliAndGzip(9,9);
+
+            // enable logger
             config.requestLogger.http((ctx, ms) -> {
                 log.debug("served: {} in {} ms.", ctx.fullUrl(), ms);
             });
+
+            // enable debug logger
+            config.plugins.enableDevLogging();
         });
     }
 
@@ -128,7 +137,7 @@ public class ApiRestServer {
      * @param port to use
      * @param routesConfigurator
      */
-    public static void start(final Integer port, final RoutesConfigurator routesConfigurator) {
+    public static Javalin start(final Integer port, final RoutesConfigurator routesConfigurator) {
         if (port < 1024 || port > 65535) {
             log.error("Bad port {}.", port);
             throw new IllegalArgumentException("Bad port: " + port);
@@ -162,7 +171,7 @@ public class ApiRestServer {
 
 
         // start!
-        app.start(port);
+        return app.start(port);
     }
 
 
