@@ -1,21 +1,24 @@
 package cl.ucn.disc.as;
 
 import cl.ucn.disc.as.model.Edificio;
-import cl.ucn.disc.as.ui.ApiRestServer;
-import cl.ucn.disc.as.ui.WebController;
 import cl.ucn.disc.as.model.Persona;
 import cl.ucn.disc.as.services.Sistema;
 import cl.ucn.disc.as.services.SistemaImpl;
+import cl.ucn.disc.as.grpc.PersonaGrpcServiceImpl;
+import cl.ucn.disc.as.ui.ApiRestServer;
+import cl.ucn.disc.as.ui.WebController;
 import com.github.javafaker.Faker;
 import com.github.javafaker.service.FakeValuesService;
 import com.github.javafaker.service.RandomService;
 import io.ebean.DB;
 import io.ebean.Database;
+import io.grpc.Server;
+import io.grpc.ServerBuilder;
 import io.javalin.Javalin;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.util.Locale;
-import java.util.Optional;
 
 /**
  * The Main
@@ -24,24 +27,37 @@ import java.util.Optional;
  */
 @Slf4j
 public final class Main {
+
     /**
      * The Main
      *
      * @param args to use
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException, IOException {
 
-        log.debug("Starting Main ...");
-
-        log.debug("Library path: {}", System.getProperty("java.library.path"));
+        log.debug("Starting Main with library path: {}", System.getProperty("java.library.path"));
 
         // Start the API Rest server
+        log.debug("Starting ApiRest server ..");
         Javalin app = ApiRestServer.start(7070, new WebController());
 
-        //log.debug("Stopping ..");
-        //app.stop();
+        // stop the API REST server.
+        // app.stop();
 
-        log.debug("Done. :)");
+        // Start the gRPC server
+        log.debug("Starting the gRPC server ..");
+        Server server = ServerBuilder
+                .forPort(50123)
+                .addService(new PersonaGrpcServiceImpl())
+                .build();
+
+        server.start();
+
+        // shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread(server::shutdown));
+
+        // wait for the stop
+        server.awaitTermination();
 
         //get the database
         Database db = DB.getDefault();
