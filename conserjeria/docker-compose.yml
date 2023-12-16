@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  javalin-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: javalin-app-container
+    depends_on:
+      - mariadb
+    ports:
+      - "8080:7070"
+    environment:
+      JDBC_URL: jdbc:mysql://mariadb:3306/sample-db
+      JDBC_USER: root
+      JDBC_PASSWORD: password

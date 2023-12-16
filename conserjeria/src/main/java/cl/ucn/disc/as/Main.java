@@ -1,17 +1,19 @@
 package cl.ucn.disc.as;
 
+import cl.ucn.disc.as.grpc.PersonaGrpcServiceImpl;
 import cl.ucn.disc.as.model.Edificio;
 import cl.ucn.disc.as.model.Persona;
 import cl.ucn.disc.as.services.Sistema;
 import cl.ucn.disc.as.services.SistemaImpl;
-import cl.ucn.disc.as.grpc.PersonaGrpcServiceImpl;
 import cl.ucn.disc.as.ui.ApiRestServer;
 import cl.ucn.disc.as.ui.WebController;
 import com.github.javafaker.Faker;
 import com.github.javafaker.service.FakeValuesService;
 import com.github.javafaker.service.RandomService;
-import io.ebean.DB;
 import io.ebean.Database;
+import io.ebean.DatabaseFactory;
+import io.ebean.config.DatabaseConfig;
+import io.ebean.datasource.DataSourceConfig;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.javalin.Javalin;
@@ -28,6 +30,24 @@ import java.util.Locale;
 @Slf4j
 public final class Main {
 
+    private static Database initDatabase() {
+        DatabaseConfig config = new DatabaseConfig();
+        config.setName("default");
+
+        DataSourceConfig dataSourceConfig = new DataSourceConfig();
+        dataSourceConfig.setDriver("org.mariadb.jdbc.Driver");
+        dataSourceConfig.setUsername("root");
+        dataSourceConfig.setPassword("password");
+        dataSourceConfig.setUrl("jdbc:mariadb://localhost:3306/db");
+
+        config.setDataSourceConfig(dataSourceConfig);
+
+        config.setDefaultServer(true);
+        config.setRegister(false);
+
+        return DatabaseFactory.create(config);
+    }
+
     /**
      * The Main
      *
@@ -40,6 +60,18 @@ public final class Main {
         // Start the API Rest server
         log.debug("Starting ApiRest server ..");
         Javalin app = ApiRestServer.start(7070, new WebController());
+
+        //get the database
+        Database db = initDatabase();
+
+        if (db != null) {
+            log.debug("Database connected successfully!");
+        } else {
+            log.error("Failed to connect to the database.");
+        }
+
+        //the sistema
+        Sistema sistema = new SistemaImpl(db);
 
         // stop the API REST server.
         // app.stop();
@@ -59,11 +91,7 @@ public final class Main {
         // wait for the stop
         server.awaitTermination();
 
-        //get the database
-        Database db = DB.getDefault();
 
-        //the sistema
-        Sistema sistema = new SistemaImpl(db);
 
         Edificio edificio = Edificio.builder()
                 .nombre("Y1")
